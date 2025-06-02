@@ -1,0 +1,78 @@
+{% load static %}
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Главная - Статистика{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'mailing/css/bootstrap.min.css' %}">
+</head>
+<body>
+
+<!-- Навигация -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'home' %}">Рассылки</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <span class="navbar-text text-white me-3">Привет, {{ user.username }}</span>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">Вход</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}">Регистрация</a>
+          </li>
+          <li class="nav-item">
+          <a class="nav-link" href="{% url 'password_reset' %}">Забыли пароль?</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'user_statistics' %}">Статистика</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-5">
+    {% block content %}
+    <!-- Основной контент будет здесь -->
+    <h1 class="mb-4 text-center">📊 Статистика рассылок</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-3 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Всего рассылок</h5>
+                    <p class="card-text display-6">{{ total_mailings }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-3 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Активных рассылок</h5>
+                    <p class="card-text display-6">{{ active_mailings }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info mb-3 shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Уникальных клиентов</h5>
+                    <p class="card-text display-6">{{ unique_clients }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock %}
+</div>
+
+<script src="{% static 'mailing/js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

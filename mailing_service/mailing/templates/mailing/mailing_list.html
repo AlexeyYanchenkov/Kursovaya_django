@@ -1,0 +1,30 @@
+<h2>Мои рассылки</h2>
+{% load cache %}
+{% cache 300 user_mailing_table request.user.id %}
+<table>
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Время</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for mailing in mailings %}
+        <tr>
+            <td>{{ mailing.title }}</td>
+            <td>{{ mailing.scheduled_time }}</td>
+            <td>{{ mailing.status }}</td>
+            <td>
+                {% if mailing.user == request.user %}
+                    <a href="{% url 'edit_mailing' mailing.pk %}">Редактировать</a> |
+                    <a href="{% url 'delete_mailing' mailing.pk %}">Удалить</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endcache %}
+<a href="{% url 'create_mailing' %}">Создать рассылку</a>
