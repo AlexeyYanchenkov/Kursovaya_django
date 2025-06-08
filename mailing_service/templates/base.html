@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Mailing Service{% endblock %}</title>
+</head>
+<body>
+    <header>
+        <h1>Сервис рассылок</h1>
+        <nav>
+            <a href="/">Главная</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'logout' %}">Выход</a>
+            {% else %}
+                <a href="{% url 'login' %}">Вход</a>
+            {% endif %}
+        </nav>
+    </header>
+    <hr>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>
