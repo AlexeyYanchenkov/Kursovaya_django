@@ -1,86 +1,118 @@
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views import View
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-
 from .models import Mailing, Client, MessageLog
-from .forms import MailingForm
+from .forms import MailingForm, ClientForm, MessageForm
 
-@login_required
-def mailing_list(request):
-    if request.user.groups.filter(name='Manager').exists():
-        mailings = Mailing.objects.all()
-    else:
-        mailings = Mailing.objects.filter(user=request.user)
-    return render(request, 'mailing/mailing_list.html', {'mailings': mailings})
+class ManagerAccessMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.groups.filter(name='Manager').exists()
 
-@login_required
-def client_list(request):
-    if request.user.groups.filter(name='Manager').exists():
-        clients = Client.objects.all()
-    else:
-        clients = Client.objects.filter(mailing__user=request.user).distinct()
-    return render(request, 'mailing/client_list.html', {'clients': clients})
+class MailingListView(LoginRequiredMixin, ListView):
+    model = Mailing
+    template_name = 'mailing/mailing_list.html'
+    context_object_name = 'mailings'
 
-@login_required
-def create_mailing(request):
-    if request.method == 'POST':
-        form = MailingForm(request.POST)
-        if form.is_valid():
-            mailing = form.save(commit=False)
-            mailing.user = request.user
-            mailing.save()
-            form.save_m2m()
-            return redirect('mailing_list')
-    else:
-        form = MailingForm()
-    return render(request, 'mailing/create_mailing.html', {'form': form})
+    def get_queryset(self):
+        user = self.request.user
+        if user.groups.filter(name='Manager').exists():
+            return Mailing.objects.all()
+        return Mailing.objects.filter(user=user)
 
-@login_required
-def edit_mailing(request, pk):
-    mailing = get_object_or_404(Mailing, pk=pk)
+class ClientListView(LoginRequiredMixin, ListView):
+    model = Client
+    template_name = 'mailing/client_list.html'
+    context_object_name = 'clients'
 
-    if mailing.user != request.user:
-        raise PermissionDenied("Редактировать можно только свои рассылки.")
+    def get_queryset(self):
+        user = self.request.user
+        if user.groups.filter(name='Manager').exists():
+            return Client.objects.all()
+        return Client.objects.filter(mailing__user=user).distinct()
 
-    if request.method == 'POST':
-        form = MailingForm(request.POST, instance=mailing)
-        if form.is_valid():
-            form.save()
-            return redirect('mailing_list')
-    else:
-        form = MailingForm(instance=mailing)
+class ClientCreateView(CreateView):
+    model = Client
+    fields = ['email', 'full_name', 'comment']  # укажи нужные поля
+    template_name = 'mailing/client_form.html'
+    success_url = reverse_lazy('mailing:client_list')
 
-    return render(request, 'mailing/edit_mailing.html', {'form': form})
+class MailingCreateView(LoginRequiredMixin, CreateView):
+    model = Mailing
+    form_class = MailingForm
+    template_name = 'mailing/create_mailing.html'
+    success_url = reverse_lazy('mailing_list')
 
-@login_required
-def delete_mailing(request, pk):
-    mailing = get_object_or_404(Mailing, pk=pk)
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
 
-    if mailing.user != request.user:
-        raise PermissionDenied("Удалять можно только свои рассылки.")
+class MailingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Mailing
+    form_class = MailingForm
+    template_name = 'mailing/edit_mailing.html'
+    success_url = reverse_lazy('mailing_list')
 
-    if request.method == 'POST':
-        mailing.delete()
-        return redirect('mailing_list')
+    def test_func(self):
+        mailing = self.get_object()
+        return mailing.user == self.request.user
 
-    return render(request, 'mailing/confirm_delete.html', {'mailing': mailing})
+class MailingDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Mailing
+    template_name = 'mailing/confirm_delete.html'
+    success_url = reverse_lazy('mailing_list')
 
-@cache_page(60 * 5)
-@login_required
-def user_statistics(request):
-    user = request.user
-    mailings = Mailing.objects.filter(user=user)
-    logs = MessageLog.objects.filter(mailing__in=mailings)
+    def test_func(self):
+        mailing = self.get_object()
+        return mailing.user == self.request.user
 
-    total = logs.count()
-    successful = logs.filter(status=True).count()
-    failed = logs.filter(status=False).count()
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class UserStatisticsView(LoginRequiredMixin, TemplateView):
+    template_name = 'mailing/statistics.html'
 
-    context = {
-        'total': total,
-        'successful': successful,
-        'failed': failed,
-    }
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        mailings = Mailing.objects.filter(user=user)
+        logs = MessageLog.objects.filter(mailing__in=mailings)
 
-    return render(request, 'mailing/statistics.html', context)
+        context['total'] = logs.count()
+        context['successful'] = logs.filter(status=True).count()
+        context['failed'] = logs.filter(status=False).count()
+        return context
+
+@method_decorator(login_required, name='dispatch')
+class HomeView(View):
+    def get(self, request):
+        total_mailings = Mailing.objects.count()
+        active_mailings = Mailing.objects.filter(status='started').count()
+        unique_clients = Client.objects.count()
+        total_logs = MessageLog.objects.count()
+        successful_logs = MessageLog.objects.filter(status=True).count()
+        failed_logs = MessageLog.objects.filter(status=False).count()
+
+        context = {
+            'total_mailings': total_mailings,
+            'active_mailings': active_mailings,
+            'unique_clients': unique_clients,
+            'total_logs': total_logs,
+            'successful_logs': successful_logs,
+            'failed_logs': failed_logs,
+        }
+
+        return render(request, 'mailing/home.html', context)
+
+class ClientUpdateView(UpdateView):
+    model = Client
+    form_class = ClientForm
+    template_name = 'mailing/client_form.html'  # Можно переиспользовать форму создания
+    success_url = reverse_lazy('client_form')
+
+class ClientDeleteView(DeleteView):
+    model = Client
+    template_name = 'mailing/client_confirm_delete.html'
+    success_url = reverse_lazy('mailing:client_list')

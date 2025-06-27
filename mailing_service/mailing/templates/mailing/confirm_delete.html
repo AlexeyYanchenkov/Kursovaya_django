@@ -1,18 +1,12 @@
 {% extends "base.html" %}
-
+{% block title %}Подтверждение удаления{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <div class="card p-4 shadow-sm">
-        <h2 class="text-danger">Подтверждение удаления</h2>
-        <p>Вы уверены, что хотите <strong>удалить</strong> рассылку <strong>"{{ mailing }}"</strong>? Это действие необратимо.</p>
-
-        <form method="post" class="mt-3">
-            {% csrf_token %}
-            <div class="d-flex justify-content-between">
-                <a href="{% url 'mailing_list' %}" class="btn btn-secondary">Отмена</a>
-                <button type="submit" class="btn btn-danger">Удалить</button>
-            </div>
-        </form>
-    </div>
+<div class="container mt-5">
+  <h2>Подтверждение удаления рассылки</h2>
+  <p>Вы уверены, что хотите удалить рассылку <strong>{{ object }}</strong>?</p>
+  <form method="post">{% csrf_token %}
+    <button type="submit" class="btn btn-danger">Удалить</button>
+    <a href="{% url 'mailing_list' %}" class="btn btn-secondary">Отмена</a>
+  </form>
 </div>
 {% endblock %}

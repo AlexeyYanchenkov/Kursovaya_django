@@ -89,7 +89,7 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'mailing/static',]
 
 MEDIA_URL = '/media/'
@@ -119,3 +119,17 @@ CACHES = {
         }
     }
 }
+
+AUTH_USER_MODEL = 'users.CustomUser'
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/Moscow'
+CELERY_BEAT_SCHEDULE = {
+    'process-mailings-every-minute': {
+        'task': 'mailing.tasks.process_mailings',
+        'schedule': 60.0,  # каждые 60 секунд
+    },
+}
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'

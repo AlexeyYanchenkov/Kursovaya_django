@@ -1,4 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Активация успешна{% endblock %}
 {% block content %}
-  <h2>Подтверждение прошло успешно!</h2>
-  <p>Вы можете <a href="{% url 'login' %}">войти в систему</a>.</p>
+<div class="container mt-5">
+  <h2>Активация успешна</h2>
+  <p>Ваш аккаунт успешно активирован.</p>
+  <a href="{% url 'login' %}">Войти</a>
+</div>
 {% endblock %}

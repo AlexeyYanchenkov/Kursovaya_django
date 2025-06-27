@@ -1,24 +1,52 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Mailing Service{% endblock %}</title>
+    <title>{% block title %}Рассылки{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'mailing/css/bootstrap.min.css' %}">
+    <script src="{% static 'mailing/js/bootstrap.bundle.min.js' %}"></script>
 </head>
 <body>
-    <header>
-        <h1>Сервис рассылок</h1>
-        <nav>
-            <a href="/">Главная</a>
-            {% if user.is_authenticated %}
-                <a href="{% url 'logout' %}">Выход</a>
-            {% else %}
-                <a href="{% url 'login' %}">Вход</a>
-            {% endif %}
-        </nav>
-    </header>
-    <hr>
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'mailing:home' %}">Рассылки</a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'mailing:mailing_list' %}">Мои рассылки</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'mailing:client_list' %}">Клиенты</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'mailing:user_statistics' %}">Статистика</a>
+          </li>
+          <li class="nav-item">
+            <span class="navbar-text text-white me-2">Привет, {{ user.username }}</span>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Выйти</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'login' %}">Вход</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'register' %}">Регистрация</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  {% block content %}
+  {% endblock %}
+</div>
+
+<script src="{% static 'mailing/js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>
