@@ -1,1 +1,1 @@
-default_app_config = 'mailing.apps.MailingConfig'
+default_app_config = "mailing.apps.MailingConfig"

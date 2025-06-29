@@ -1,11 +1,14 @@
 from django.db import models
 from users.models import CustomUser  # Кастомная модель пользователя
 
+
 class Client(models.Model):
     email = models.EmailField()
     full_name = models.CharField(max_length=100)
     comment = models.TextField(blank=True)
-    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+    owner = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     class Meta:
         verbose_name = "Клиент"
@@ -14,11 +17,14 @@ class Client(models.Model):
     def __str__(self):
         return self.full_name
 
+
 class Message(models.Model):
     subject = models.CharField(max_length=255)
     body = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
+    owner = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     class Meta:
         verbose_name = "Сообщение"
@@ -32,17 +38,20 @@ class Message(models.Model):
             ("can_view_all_messages", "Может просматривать все сообщения"),
         ]
 
+
 class Mailing(models.Model):
     STATUS_CHOICES = [
-        ('CREATED', 'Создана'),
-        ('STARTED', 'Запущена'),
-        ('FINISHED', 'Завершена'),
+        ("CREATED", "Создана"),
+        ("STARTED", "Запущена"),
+        ("FINISHED", "Завершена"),
     ]
 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='mailings')
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name="mailings"
+    )
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='CREATED')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="CREATED")
     message = models.ForeignKey(Message, on_delete=models.CASCADE)
     clients = models.ManyToManyField(Client)
 
@@ -54,10 +63,11 @@ class Mailing(models.Model):
             ("can_view_all_mailings", "Может просматривать все рассылки"),
         ]
 
+
 class MailingAttempt(models.Model):
     STATUS_CHOICES = (
-        ('SUCCESS', 'Успешно'),
-        ('FAILURE', 'Ошибка'),
+        ("SUCCESS", "Успешно"),
+        ("FAILURE", "Ошибка"),
     )
 
     mailing = models.ForeignKey(Mailing, on_delete=models.CASCADE)
@@ -68,6 +78,7 @@ class MailingAttempt(models.Model):
 
     def __str__(self):
         return f"Попытка {self.mailing_id} - {self.get_status_display()} - {self.timestamp}"
+
 
 class MessageLog(models.Model):
     mailing = models.ForeignKey(Mailing, on_delete=models.CASCADE)

@@ -10,39 +10,53 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('mailing', '0001_initial'),
+        ("mailing", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='mailing',
-            name='user',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='mailings', to=settings.AUTH_USER_MODEL),
+            model_name="mailing",
+            name="user",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="mailings",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='mailingattempt',
-            name='client',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mailing.client'),
+            model_name="mailingattempt",
+            name="client",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="mailing.client"
+            ),
         ),
         migrations.AddField(
-            model_name='mailingattempt',
-            name='mailing',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mailing.mailing'),
+            model_name="mailingattempt",
+            name="mailing",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="mailing.mailing"
+            ),
         ),
         migrations.AddField(
-            model_name='mailing',
-            name='message',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mailing.message'),
+            model_name="mailing",
+            name="message",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="mailing.message"
+            ),
         ),
         migrations.AddField(
-            model_name='messagelog',
-            name='client',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mailing.client'),
+            model_name="messagelog",
+            name="client",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="mailing.client"
+            ),
         ),
         migrations.AddField(
-            model_name='messagelog',
-            name='mailing',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='mailing.mailing'),
+            model_name="messagelog",
+            name="mailing",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="mailing.mailing"
+            ),
         ),
     ]
