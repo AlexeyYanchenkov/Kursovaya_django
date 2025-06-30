@@ -47,7 +47,7 @@ class ClientListView(LoginRequiredMixin, ListView):
 
 class ClientCreateView(CreateView):
     model = Client
-    fields = ["email", "full_name", "comment"]  # укажи нужные поля
+    fields = ["email", "full_name", "comment"]
     template_name = "mailing/client_form.html"
     success_url = reverse_lazy("mailing:client_list")
 
@@ -129,7 +129,7 @@ class HomeView(View):
 class ClientUpdateView(UpdateView):
     model = Client
     form_class = ClientForm
-    template_name = "mailing/client_form.html"  # Можно переиспользовать форму создания
+    template_name = "mailing/client_form.html"
     success_url = reverse_lazy("client_form")
 
 

@@ -30,7 +30,7 @@ class RegisterView(FormView):
         user.is_active = False
         user.save()
 
-        send_activation_email(self.request, user)  # вот здесь вызываешь
+        send_activation_email(self.request, user)
         return render(self.request, "users/email_confirmation_sent.html")
 
 
