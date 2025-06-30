@@ -52,7 +52,7 @@ class Mailing(models.Model):
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="CREATED")
-    message = models.ForeignKey(Message, on_delete=models.CASCADE)
+    message = models.ForeignKey('Message', on_delete=models.CASCADE, related_name='mailings')
     clients = models.ManyToManyField(Client)
 
     def __str__(self):

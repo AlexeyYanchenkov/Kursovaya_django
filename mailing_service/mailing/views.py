@@ -8,12 +8,12 @@ from django.views.generic import (
     DeleteView,
     TemplateView,
 )
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from .models import Mailing, Client, MessageLog
-from .forms import MailingForm, ClientForm
+from .forms import MailingForm, ClientForm, MessageForm
 
 
 class ManagerAccessMixin(UserPassesTestMixin):
@@ -56,18 +56,22 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
     form_class = MailingForm
     template_name = "mailing/create_mailing.html"
-    success_url = reverse_lazy("mailing_list")
+    success_url = reverse_lazy("mailing:mailing_list")
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        print("Ошибка при валидации формы:", form.errors)
+        return super().form_invalid(form)
 
 
 class MailingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Mailing
     form_class = MailingForm
     template_name = "mailing/edit_mailing.html"
-    success_url = reverse_lazy("mailing_list")
+    success_url = reverse_lazy("mailing:mailing_list")
 
     def test_func(self):
         mailing = self.get_object()
@@ -77,7 +81,7 @@ class MailingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 class MailingDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Mailing
     template_name = "mailing/confirm_delete.html"
-    success_url = reverse_lazy("mailing_list")
+    success_url = reverse_lazy("mailing:mailing_list")
 
     def test_func(self):
         mailing = self.get_object()
