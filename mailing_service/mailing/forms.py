@@ -14,12 +14,16 @@ class MailingForm(forms.ModelForm):
 
     class Meta:
         model = Mailing
-        fields = ["message", "clients", "start_datetime", "end_datetime"]
+        fields = ["clients", "start_datetime", "end_datetime"]
         widgets = {
-            'message': forms.Select(attrs={'class': 'form-control'}),
             'clients': forms.SelectMultiple(attrs={'class': 'form-control'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['clients'].queryset = Client.objects.filter(owner=user)
 
 class ClientForm(forms.ModelForm):
     class Meta:

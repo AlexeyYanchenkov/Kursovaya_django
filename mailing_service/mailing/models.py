@@ -7,7 +7,7 @@ class Client(models.Model):
     full_name = models.CharField(max_length=100)
     comment = models.TextField(blank=True)
     owner = models.ForeignKey(
-        CustomUser, on_delete=models.CASCADE, null=True, blank=True
+        CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='clients'
     )
 
     class Meta:

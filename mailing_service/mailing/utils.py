@@ -21,7 +21,7 @@ def send_mailing(mailing):
                 client=client,
                 status="SUCCESS",
                 server_response="Message sent successfully.",
-                timestamp=timezone.now(),  # если поле есть
+                timestamp=timezone.now(),
             )
         except Exception as e:
             MailingAttempt.objects.create(
@@ -29,5 +29,5 @@ def send_mailing(mailing):
                 client=client,
                 status="FAILURE",
                 server_response=str(e),
-                timestamp=timezone.now(),  # если поле есть
+                timestamp=timezone.now(),
             )

@@ -10,7 +10,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         now = timezone.now()
         mailings = Mailing.objects.filter(
-            start_datetime__lte=now, end_datetime__gte=now, is_active=True
+            start_datetime__lte=now, end_datetime__gte=now, status='started'
         )
 
         if not mailings.exists():

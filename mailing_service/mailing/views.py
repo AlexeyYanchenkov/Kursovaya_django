@@ -42,7 +42,7 @@ class ClientListView(LoginRequiredMixin, ListView):
         user = self.request.user
         if user.groups.filter(name="Manager").exists():
             return Client.objects.all()
-        return Client.objects.filter(mailing__user=user).distinct()
+        return Client.objects.filter(owner=user)
 
 
 class ClientCreateView(CreateView):
@@ -51,6 +51,10 @@ class ClientCreateView(CreateView):
     template_name = "mailing/client_form.html"
     success_url = reverse_lazy("mailing:client_list")
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
     model = Mailing
@@ -58,13 +62,35 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
     template_name = "mailing/create_mailing.html"
     success_url = reverse_lazy("mailing:mailing_list")
 
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
+    def get(self, request, *args, **kwargs):
+        mailing_form = MailingForm(user=request.user)
+        message_form = MessageForm()
+        return render(request, self.template_name, {
+            'mailing_form': mailing_form,
+            'message_form': message_form,
+        })
 
-    def form_invalid(self, form):
-        print("Ошибка при валидации формы:", form.errors)
-        return super().form_invalid(form)
+    def post(self, request, *args, **kwargs):
+        mailing_form = MailingForm(request.POST, user=request.user)
+        message_form = MessageForm(request.POST)
+
+        if mailing_form.is_valid() and message_form.is_valid():
+            message = message_form.save(commit=False)
+            message.owner = request.user
+            message.save()
+
+            mailing = mailing_form.save(commit=False)
+            mailing.user = request.user
+            mailing.message = message
+            mailing.save()
+            mailing_form.save_m2m()
+
+            return redirect(self.success_url)
+        else:
+            return render(request, self.template_name, {
+                'mailing_form': mailing_form,
+                'message_form': message_form,
+            })
 
 
 class MailingUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
@@ -95,12 +121,17 @@ class UserStatisticsView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        mailings = Mailing.objects.filter(user=user)
-        logs = MessageLog.objects.filter(mailing__in=mailings)
 
-        context["total"] = logs.count()
-        context["successful"] = logs.filter(status=True).count()
-        context["failed"] = logs.filter(status=False).count()
+        # Все рассылки пользователя
+        mailings = Mailing.objects.filter(user=user)
+
+        # Уникальные клиенты, связанные с этими рассылками
+        clients = Client.objects.filter(mailing__in=mailings).distinct()
+
+        context["total_mailings"] = mailings.count()
+        context["active_mailings"] = mailings.filter(status="started").count()
+        context["unique_clients"] = clients.count()
+
         return context
 
 

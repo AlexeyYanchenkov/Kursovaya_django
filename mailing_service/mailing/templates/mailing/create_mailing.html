@@ -5,8 +5,10 @@
   <h2 class="mb-4">Создать рассылку</h2>
   <form method="post">
     {% csrf_token %}
-    {{ form.non_field_errors }}
-    {% for field in form %}
+
+    <h4 class="mt-4">Сообщение</h4>
+    {{ message_form.non_field_errors }}
+    {% for field in message_form %}
       <div class="mb-3">
         <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
         {{ field }}
@@ -15,6 +17,19 @@
         {% endif %}
       </div>
     {% endfor %}
+
+    <h4 class="mt-5">Настройки рассылки</h4>
+    {{ mailing_form.non_field_errors }}
+    {% for field in mailing_form %}
+      <div class="mb-3">
+        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+          <div class="text-danger">{{ field.errors }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
     <div class="text-center mt-4">
       <button type="submit" class="btn btn-lg btn-primary px-5">Создать рассылку</button>
     </div>
